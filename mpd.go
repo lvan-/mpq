@@ -44,6 +44,9 @@ func getState() (state state, err error) {
 	if state.songID, err = getSongID(status); err != nil {
 		return
 	}
+	if state.songPos, err = getSongPosition(status); err != nil {
+		return
+	}
 	if err = fillQueue(&state); err != nil {
 		return
 	}
@@ -167,6 +170,16 @@ func getSongID(status string) (*int, error) {
 		}
 	}
 	return nil, nil
+}
+
+func getSongPosition(status string) (int, error) {
+	for _, line := range strings.Split(status, "\n") {
+		if strings.HasPrefix(line, "song: ") && len(line) > 6 {
+			i, err := strconv.Atoi(line[6:])
+			return i, err
+		}
+	}
+	return 0, nil
 }
 
 func executeMPDCommand(command string) (resp string, err error) {

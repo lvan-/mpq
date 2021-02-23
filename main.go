@@ -17,6 +17,7 @@ type state struct {
 	// songid of the currently playing or paused song;
 	// nil when stopped:
 	songID      *int
+	songPos     int
 	highlighted int // index of the highlighted song in the queue
 	queue       []song
 }
@@ -37,6 +38,7 @@ const (
 	clearEvent
 	highlightPrevEvent
 	highlightNextEvent
+	highlightCurrentEvent
 	seekBackwardsEvent
 	seekForwardsEvent
 	movePrevEvent
@@ -63,6 +65,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Could not get mpd state: %v\n", err)
 		os.Exit(1)
 	}
+    state.highlighted = state.songPos
 
 	events := make(chan event)
 	go handleTcellEvents(screen, events)
@@ -121,6 +124,9 @@ func runEventLoop(state state, screen tcell.Screen, events chan event) error {
 					state.highlighted += 1
 					draw(state, screen)
 				}
+			case highlightCurrentEvent:
+				state.highlighted = state.songPos
+				draw(state, screen)
 			case movePrevEvent:
 				if err = moveHighlightedUpwards(&state); err != nil {
 					return err
